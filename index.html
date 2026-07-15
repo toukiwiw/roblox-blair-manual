@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>BLAIR // FIELD MANUAL</title>
+<style>
+  :root{
+    --bg:#070b09;
+    --bg-panel:#0d1712;
+    --bg-panel-2:#0f1c16;
+    --line:#1c3328;
+    --text:#d9ffe9;
+    --text-dim:#6f9483;
+    --text-dimmer:#3f5a4d;
+    --green:#39ff8f;
+    --green-dim:#1f7a4d;
+    --amber:#ffb238;
+    --red:#ff5c5c;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "JetBrains Mono", Menlo, Consolas, "Courier New", monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--mono);
+    -webkit-font-smoothing:antialiased;
+  }
+  body{
+    padding:14px 12px 60px;
+    max-width:640px;
+    margin:0 auto;
+    position:relative;
+  }
+  /* scanline / crt texture */
+  body::before{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(57,255,143,0.035) 0px,
+      rgba(57,255,143,0.035) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+    z-index:5;
+    mix-blend-mode:overlay;
+  }
+  body::after{
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    background:radial-gradient(ellipse at 50% 0%, rgba(57,255,143,0.05), transparent 60%);
+    z-index:4;
+  }
+
+  header{
+    border-bottom:1px solid var(--line);
+    padding-bottom:12px;
+    margin-bottom:14px;
+  }
+  .eyebrow{
+    font-size:10px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+  }
+  .eyebrow .dot{
+    display:inline-block;
+    width:6px;height:6px;
+    border-radius:50%;
+    background:var(--green);
+    box-shadow:0 0 6px var(--green);
+    margin-right:6px;
+    animation:blink 1.6s infinite steps(2);
+  }
+  @keyframes blink{ 50%{opacity:.25;} }
+  h1{
+    font-size:22px;
+    letter-spacing:.03em;
+    margin:8px 0 2px;
+    color:var(--text);
+    text-shadow:0 0 10px rgba(57,255,143,.25);
+  }
+  .sub{
+    font-size:11.5px;
+    color:var(--text-dim);
+  }
+  .version-line{
+    font-size:9.5px;
+    color:var(--text-dimmer);
+    margin-top:4px;
+    letter-spacing:.03em;
+  }
+
+  /* counter */
+  .counter-wrap{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    margin-top:14px;
+    padding:12px 14px;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+  }
+  .counter-label{
+    font-size:10px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--text-dim);
+  }
+  .counter-value{
+    font-size:34px;
+    font-weight:700;
+    color:var(--green);
+    text-shadow:0 0 14px rgba(57,255,143,.4);
+    transition:transform .15s;
+  }
+  .counter-value.tick{ animation:glitch .18s; }
+  @keyframes glitch{
+    0%{ transform:translateX(0); }
+    25%{ transform:translateX(-2px); opacity:.6;}
+    50%{ transform:translateX(2px); }
+    100%{ transform:translateX(0); opacity:1;}
+  }
+  .counter-of{ color:var(--text-dimmer); font-size:16px; }
+
+  /* section titles */
+  .section-title{
+    font-size:11px;
+    letter-spacing:.18em;
+    text-transform:uppercase;
+    color:var(--green);
+    margin:22px 0 8px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .section-title::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background:var(--line);
+  }
+
+  /* evidence toggles */
+  .evidence-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:8px;
+  }
+  .ev-btn{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+    padding:10px 10px;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    color:var(--text-dim);
+    font-family:var(--mono);
+    font-size:11.5px;
+    text-align:left;
+    cursor:pointer;
+    user-select:none;
+    -webkit-tap-highlight-color:transparent;
+    transition:border-color .15s, background .15s, color .15s;
+    position:relative;
+    overflow:hidden;
+  }
+  .ev-btn .tag{
+    font-size:9px;
+    letter-spacing:.14em;
+    color:var(--text-dimmer);
+  }
+  .ev-btn.confirmed{
+    border-color:var(--amber);
+    color:var(--amber);
+    background:rgba(255,178,56,0.07);
+  }
+  .ev-btn.confirmed .tag{ color:var(--amber); opacity:.7; }
+  .ev-btn.eliminated{
+    border-color:var(--red);
+    color:var(--red);
+    background:rgba(255,92,92,0.06);
+    text-decoration:line-through;
+  }
+  .ev-btn.eliminated .tag{ color:var(--red); opacity:.7; }
+  .ev-btn::before{
+    content:attr(data-state);
+    position:absolute;
+    top:6px; right:8px;
+    font-size:9px;
+    letter-spacing:.1em;
+    color:inherit;
+    opacity:.8;
+  }
+  .reset-btn{
+    margin-top:10px;
+    width:100%;
+    padding:9px;
+    background:transparent;
+    border:1px dashed var(--line);
+    color:var(--text-dim);
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    border-radius:4px;
+    cursor:pointer;
+  }
+  .reset-btn:active{ border-color:var(--red); color:var(--red); }
+
+  /* ghost list */
+  .ghost-list{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+  }
+  .ghost-card{
+    padding:9px 12px;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:4px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:12.5px;
+    transition:opacity .2s, filter .2s;
+  }
+  .ghost-card .name{ color:var(--text); }
+  .ghost-card .evs{ color:var(--text-dimmer); font-size:10px; letter-spacing:.04em; }
+  .ghost-card.out{
+    opacity:.28;
+    filter:grayscale(1);
+  }
+  .ghost-card.out .name::after{
+    content:" — ELIMINATED";
+    color:var(--red);
+    font-size:9px;
+    letter-spacing:.08em;
+  }
+
+  /* accordion tools */
+  .tool{
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:var(--bg-panel);
+    margin-bottom:7px;
+    overflow:hidden;
+  }
+  .tool summary{
+    list-style:none;
+    padding:11px 12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    cursor:pointer;
+    font-size:13px;
+    color:var(--text);
+    -webkit-tap-highlight-color:transparent;
+  }
+  .tool summary::-webkit-details-marker{ display:none; }
+  .tool summary .chev{
+    color:var(--green);
+    transition:transform .2s;
+    font-size:11px;
+  }
+  .tool[open] summary .chev{ transform:rotate(90deg); }
+  .tool .body{
+    padding:0 14px 14px;
+    font-size:12px;
+    line-height:1.55;
+    color:var(--text-dim);
+  }
+  .tool .body b{ color:var(--amber); font-weight:600; }
+  .tool .body .warn{
+    color:var(--red);
+    display:block;
+    margin:6px 0;
+    padding-left:10px;
+    border-left:2px solid var(--red);
+  }
+  .tool .body ul{ margin:6px 0; padding-left:16px; }
+  .tool .body li{ margin-bottom:5px; }
+
+  .trait-card{
+    padding:9px 12px;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-left:3px solid var(--green-dim);
+    border-radius:4px;
+    margin-bottom:6px;
+    font-size:11.5px;
+    line-height:1.5;
+    color:var(--text-dim);
+  }
+  .trait-card b.gname{
+    display:block;
+    color:var(--green);
+    font-size:11px;
+    letter-spacing:.06em;
+    margin-bottom:3px;
+  }
+  .kit-card summary{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+  }
+  .kit-price{
+    color:var(--amber);
+    font-size:11px;
+    white-space:nowrap;
+    margin-right:8px;
+  }
+  footer{
+    margin-top:26px;
+    text-align:center;
+    font-size:10px;
+    color:var(--text-dimmer);
+    letter-spacing:.12em;
+  }
+</style>
+</head>
+<body>
+
+  <header>
+    <div class="eyebrow"><span><span class="dot"></span>VAN-CAM // LIVE</span><span id="clock">--:--</span></div>
+    <h1>BLAIR FIELD MANUAL</h1>
+    <div class="sub">Tap evidence sekali = confirmed, dua kali = eliminated. List ghost auto-update.</div>
+    <div class="version-line">Web v1.1 · Data ngikutin Blair update 8 Mei 2026 (21 ghost) · Manual diupdate 15 Jul 2026</div>
+  </header>
+
+  <div class="counter-wrap">
+    <div>
+      <div class="counter-label">Ghosts remaining</div>
+      <div class="counter-value" id="counter">21<span class="counter-of">/21</span></div>
+    </div>
+    <div style="font-size:10px;color:var(--text-dimmer);text-align:right;line-height:1.5;">
+      confirmed: <span id="confCount" style="color:var(--amber)">0</span><br>
+      eliminated: <span id="elimCount" style="color:var(--red)">0</span>
+    </div>
+  </div>
+
+  <div class="section-title">Evidence Checklist</div>
+  <div class="evidence-grid" id="evidenceGrid"></div>
+  <button class="reset-btn" id="resetBtn">Reset semua evidence</button>
+
+  <div class="section-title">Ghost List</div>
+  <div class="ghost-list" id="ghostList"></div>
+
+  <div class="section-title">Tools & Edge Case</div>
+  <div id="toolsWrap"></div>
+
+  <div class="section-title">Cursed Objects</div>
+  <div id="cursedWrap"></div>
+
+  <div class="section-title">Kits</div>
+  <div id="kitsWrap"></div>
+
+  <div class="section-title">Ghost Traits (di luar deskripsi game)</div>
+  <div id="traitsWrap"></div>
+
+  <div class="section-title">Elimination Tips</div>
+  <details class="tool">
+    <summary><span>Tips umum biar nggak ketipu</span><span class="chev">▶</span></summary>
+    <div class="body">
+      <ul>
+        <li>Jangan langsung coret evidence dari <b>1x</b> percobaan gagal — Orb, Fingerprint, SLS, Ghost Writing butuh timing & percobaan berulang.</li>
+        <li>Waspada <b>false positive SLS</b> pas ghost lagi manifest fisik (jumpscare/flash event/fake hunt) — itu bukan evidence sah.</li>
+        <li>Kalau nemu lebih dari 3 evidence "valid", cek dulu salah satunya false positive sebelum nyimpulin bug.</li>
+        <li>Behavior/deskripsi ghost bantu banget buat cross-check, tapi ghost kadang "behave abnormally" — jangan 100% diandalkan sendirian.</li>
+      </ul>
+    </div>
+  </details>
+
+  <footer>Web version 1.1 · Game data: Blair update 8 Mei 2026 (21 ghost, 7 evidence)<br>Page terakhir diupdate: 15 Juli 2026 · local reference only, data based on public wiki, bisa berubah tiap update</footer>
+
+<script>
+const EVIDENCE = [
+  {id:'emf', label:'EMF Level 5', tag:'EMF'},
+  {id:'freeze', label:'Freezing Temp', tag:'TEMP'},
+  {id:'writing', label:'Ghost Writing', tag:'BOOK'},
+  {id:'uv', label:'Fingerprints', tag:'UV'},
+  {id:'orb', label:'Ghost Orb', tag:'ORB'},
+  {id:'box', label:'Spirit Box', tag:'BOX'},
+  {id:'sls', label:'SLS Anomaly', tag:'SLS'},
+];
+
+const GHOSTS = [
+  {name:'Banshee', ev:['emf','freeze','sls']},
+  {name:'Demon', ev:['freeze','writing','box']},
+  {name:'Faejkur', ev:['emf','freeze','writing']},
+  {name:'Harrow', ev:['writing','orb','sls']},
+  {name:'Jiangshi', ev:['sls','uv','freeze']},
+  {name:'Krasue', ev:['emf','freeze','uv']},
+  {name:'Lament', ev:['emf','orb','box']},
+  {name:'Mare', ev:['freeze','box','sls']},
+  {name:'Nook', ev:['emf','freeze','orb']},
+  {name:'Oni', ev:['writing','uv','sls']},
+  {name:'Phantom', ev:['sls','uv','orb']},
+  {name:'Poltergeist', ev:['uv','orb','box']},
+  {name:'Revenant', ev:['emf','writing','uv']},
+  {name:'Shade', ev:['emf','writing','sls']},
+  {name:'Spirit', ev:['writing','uv','box']},
+  {name:'Strigoi', ev:['emf','uv','orb']},
+  {name:'Vuult', ev:['emf','orb','sls']},
+  {name:'Wraith', ev:['freeze','orb','sls']},
+  {name:'Yama', ev:['writing','box','sls']},
+  {name:'Yurei', ev:['freeze','uv','box']},
+  {name:'ZoZo', ev:['emf','uv','box']},
+];
+
+const TOOLS = [
+  {
+    name:'EMF Reader',
+    body:`
+      <p>Baca level EMF (1–5). Cuma level <b>5</b> yang dihitung evidence.</p>
+      <ul>
+        <li>Interaksi kecil biasanya cuma EMF 2–3. Interaksi besar (ghost event) baru bisa mentok ke 4–5.</li>
+        <li>Salt yang keinjek biasanya cuma EMF 2, tapi ada peluang kecil dapet EMF 5 juga.</li>
+        <li>Bunyi EMF reader bisa narik perhatian ghost ke arah lo — hati-hati pas hunting.</li>
+        <li><b>Faejkur</b> bisa niru bunyi EMF, tapi suaranya smooth/single beep, bukan rentetan chain beep kayak aslinya.</li>
+      </ul>`
+  },
+  {
+    name:'Thermometer',
+    body:`
+      <p>Deteksi Freezing Temperatures & cari ghost room.</p>
+      <span class="warn">Threshold resmi: di bawah <b>0.10°C</b> — BUKAN di bawah 1°C, kesalahpahaman paling umum.</span>
+      <ul>
+        <li>Freezing cuma dihitung dari suhu ghost room, bukan room lain.</li>
+        <li>Snowy/foggy weather bisa bikin banyak room ikut dingin — ghost room adalah yang <b>nggak pernah naik</b> lagi suhunya.</li>
+        <li>Kalau ghost (Yama/Nook) pindah favorite room, suhu room lama naik lagi — tanda kuat itu salah satu dari dua ghost ini.</li>
+        <li>Suhu stuck di ~0.25°C dan nggak turun lagi setelah ditunggu → aman coret Freezing.</li>
+      </ul>`
+  },
+  {
+    name:'Spirit Box',
+    body:`
+      <p>Komunikasi verbal, dapet respon = evidence.</p>
+      <ul>
+        <li><b>Yama</b> punya respon unik "roar" — beda sama roar Demon. Demon roar cuma muncul pas crucifix kebakar. Kalau denger roar dan ghost <b>nggak lagi hunting</b>, itu Yama.</li>
+        <li>Harus di ghost room, lampu mati, ulang pertanyaan ~3x buat dapet respon.</li>
+      </ul>`
+  },
+  {
+    name:'Ghost Writing Book',
+    body:`
+      <ul>
+        <li>Harus ditaruh di <b>favorite room</b>, bukan sembarang room.</li>
+        <li>Butuh waktu — jangan buru-buru simpulin "nggak ada" dari sekali cek cepat.</li>
+      </ul>`
+  },
+  {
+    name:'UV Light (Fingerprints)',
+    body:`
+      <ul>
+        <li>Cuma muncul kalau ghost baru aja interaksi (pintu/lampu).</li>
+        <li>Fingerprint bisa <b>fade/hilang</b> seiring waktu — foto duluan kalau perlu bukti.</li>
+        <li>Juga bisa muncul di jejak kaki abis ghost ninjek salt.</li>
+        <li><b>Strigoi</b>: fingerprint kadang cuma 4 jari (bukan 5) — ciri unik gampang dikenali.</li>
+      </ul>`
+  },
+  {
+    name:'Video Camera / Ghost Orb',
+    body:`
+      <span class="warn">Ghost Orb HANYA spawn di favorite room — nggak akan pernah muncul di room lain walau ghost lagi roaming.</span>
+      <ul>
+        <li>Orb subtle & gampang keskip — cek berkali-kali, jangan cuma sekali lihat.</li>
+        <li>Lebih sering muncul abis ghost roaming atau abis ghost event.</li>
+        <li>Nyalain night vision biar lebih gampang lihat.</li>
+      </ul>`
+  },
+  {
+    name:'Trail Camera',
+    body:`
+      <ul>
+        <li>Motion sensor beep beda bunyi antara paranormal activity vs player lewat.</li>
+        <li>SLS Rig yang trigger trail camera biasanya cuma beep sekali (single red light beep).</li>
+      </ul>
+      <span class="warn">Trail camera merah/triggered terus cuma artinya "ada aktivitas di situ" — BUKAN otomatis konfirmasi Ghost Orb. Tetap harus buka live feed buat cek orb.</span>`
+  },
+  {
+    name:'SLS Camera (SLS Anomaly)',
+    body:`
+      <span class="warn">Evidence PALING SERING salah baca. SLS Anomaly cuma valid kalau muncul pas ghost TIDAK sedang manifest fisik. Begitu ghost manifest visual (jumpscare/flash event/red light event/fake hunt), SEMUA ghost ikut kelihatan di SLS camera — itu bukan evidence sah.</span>
+      <ul>
+        <li>Yang valid: stick figure hijau jalan sendiri + tulisan "Anomaly Detected", tanpa ghost nampak fisik bersamaan.</li>
+        <li>Cuma muncul setelah ada interaksi — cek bareng EMF5/UV yang juga interaction-based.</li>
+        <li><b>Wraith</b> kadang hovering pas SLS form. <b>Yama</b> kadang keluar room dalam bentuk SLS rig.</li>
+        <li>Info kecil yang flooding di samping box highlight nggak berarti apa-apa.</li>
+      </ul>`
+  },
+  {
+    name:'Salt',
+    body:`
+      <ul>
+        <li><b>Wraith</b> satu-satunya ghost yang TIDAK BISA menginjak salt.</li>
+        <li><b>Harrow</b> tidak bisa roam keluar favorite room — salt di luar room yang keinjek = red flag kuat Harrow.</li>
+        <li>Jejak di salt bisa dibaca EMF (biasanya 2, kadang 5).</li>
+        <li><b>Demon</b>: langkah di salt makin cepat tiap abis hunt, sampai secepat Harrow/Revenant setelah hunt ke-3.</li>
+        <li><b>Oni</b>: langkah awalnya cepat, melambat kalau kena stun/proteksi.</li>
+        <li>Makin jauh dari favorite room, makin kecil kemungkinan keinjek.</li>
+      </ul>`
+  },
+  {
+    name:'Crucifix (cara pake yang bener)',
+    body:`
+      <p>Crucifix cuma <b>nyegah hunt yang UDAH MAU terjadi biar batal</b> — bukan nyegah ghost supaya nggak pernah nyoba hunting. Begitu sanity tim di bawah threshold ghost dan dia coba hunting dalam radius crucifix, crucifix <b>kebakar seketika</b> dan hunt itu di-cancel. Sekali kepake, abis — butuh crucifix baru buat block attempt berikutnya.</p>
+      <span class="warn">Radiusnya SPHERICAL, bukan "asal di dalam 1 room" — taruh di pojok room besar bisa aja di luar radius efektif walau masih 1 ruangan.</span>
+      <ul>
+        <li><b>Ghost bisa mulai hunt dari room LAIN</b> (kalau dia lagi roaming) — walau kamu taruh crucifix di ghost room yang bener, kalau hunt mulai dari room dia lagi berada saat itu, crucifix di luar radius situ nggak kepake.</li>
+        <li><b>Demon</b>: radius +40 studs ekstra, durasi cegah hunt 2x lipat (80 detik vs 40 detik normal).</li>
+        <li><b>Oni</b>: radius -5 studs (lebih pendek dari normal), harus ditaro lebih deket.</li>
+        <li>Nggak ada timer/cooldown pasti buat "kapan ghost nyoba hunting lagi" — itu probability-based, makin lama sanity di bawah threshold, makin gede peluangnya. Yang PASTI cuma window aman 40/80 detik abis crucifix berhasil block.</li>
+        <li>Bisa block 2x berturut-turut, tapi butuh <b>2 crucifix terpisah</b> (1 crucifix = 1x pakai doang, bukan reusable).</li>
+        <li>Challenge <b>"No Crucifixes"</b> aktif: crucifix tetep kebakar & ngelengkapin objective, tapi hunting TETEP kejadian meski udah kebakar — bukan bug.</li>
+      </ul>`
+  },
+  {
+    name:'Incense Burner (cara pake yang bener)',
+    body:`
+      <p>Ada 2 fungsi beda: <b>Cleanse</b> (nyalain di ghost room, cegah hunting) dan <b>Stun</b> (pas lagi hunting, jarak ≤16 studs, bikin ghost mundur sesaat).</p>
+      <span class="warn">PENYEBAB PALING UMUM "kerasa bug": cleanse CUMA valid kalau dilakuin di room TEMPAT GHOST LAGI ADA saat itu juga — bukan cuma di favorite room. Kalau ghost lagi roaming keluar sepersekian detik pas kamu nyalain, cleanse gagal walau lokasi & suhu udah bener.</span>
+      <ul>
+        <li><b>Cara paling reliable mastiin ghost lagi di situ (real-time presence check)</b>: taruh <b>salt</b> dan tunggu keinjek, ATAU perhatiin <b>Trail Camera</b> — begitu beep tanda aktivitas paranormal, langsung nyalain burner saat itu juga.</li>
+        <li>Durasi cleanse beda per ghost: normal <b>2 menit</b>, <b>Spirit 3 menit</b> (lebih lama), <b>Demon cuma 1 menit</b> (lebih pendek — sering disalahartikan sebagai "cepet abis/bug").</li>
+        <li>Cleanse juga nyegah <b>Yama roaming/ganti room</b> selama durasi yang sama.</li>
+        <li>Bisa dinyalain ulang abis efek habis (nggak ada limit jumlah pemakaian), TAPI efeknya reset ke durasi normal, <b>nggak numpuk/stack</b> jadi lebih lama walau nyalain 2 burner bareng.</li>
+        <li>Stun pas hunting cuma ngasih 2 detik jeda (<b>Spirit 6 detik</b> + melambat) — ini BUKAN ngestop hunting total, cuma buat kasih waktu kabur/hide, ghost bisa lanjut ngejar lagi abis stun-nya abis.</li>
+        <li>Bug lama "player freeze di POV orang lain pas pake Incense Burner" — sudah di-<b>patch</b>.</li>
+      </ul>`
+  },
+];
+
+const GHOST_TRAITS = [
+  {name:'Harrow', trait:'Tidak PERNAH roam keluar favorite room sama sekali — satu-satunya ghost yang begitu. Chariot Tarot Card otomatis GAGAL kalau lawan Harrow (karena efeknya butuh ghost roam).'},
+  {name:'ZoZo', trait:'Melambat drastis kalau ditatap terus pas manifest; makin lama ditatap bisa "enrage" (ngeraung + speed naik ~10 detik). 50% chance override Spirit Board jadi nulis "ZOZO" berulang. Satu-satunya ghost yang TIDAK BISA ngelakuin crying event.'},
+  {name:'Demon', trait:'Threshold sanity 90% (nyerang walau sanity tim masih tinggi). Radius & durasi block Crucifix 2x lipat ghost lain. Cleanse Incense Burner cuma 1 menit (lebih pendek). Kadang ngeraung random pas ignore Crucifix (~1/100 chance hunting tetep jalan meski Crucifix kebakar).'},
+  {name:'Mare', trait:'TIDAK PERNAH nyoba nyalain lampu (walau breaker mati) — cuma bisa matiin. 5% chance lampu shatter pas dia matiin. Range niup candle 90 studs (2x ghost lain). Nggak bisa hunting di room yang lampunya nyala — bakal matiin dulu atau roam ke room gelap sebelum hunting.'},
+  {name:'Nook', trait:'Bisa bikin barang/equipment ilang total (puff kecil, jarang keliatan). Cuma mau roam ke room yang ADA barangnya (nggak akan pindah ke room kosong). Kalau barang di ghost room dipindah/diambil, dia bisa ikut relocate.'},
+  {name:'Yama', trait:'Paling sering ganti favorite room dari semua ghost. Room barunya cenderung deket spawn player. Spirit Box-nya bisa keluar suara "roar" unik (beda dari roar Demon). Incense Burner cleanse juga nyetop dia roaming selama durasi efeknya.'},
+  {name:'Wraith', trait:'Satu-satunya ghost yang TIDAK BISA menginjak salt sama sekali. Paling doyan roaming/jarang balik ke 1 tempat. Kadang teleport langsung ke player (jarang, bisa kedetect EMF level 2 dari trail camera). Melayang (bukan berdiri) pas manifest/SLS form.'},
+  {name:'Shade', trait:'Nyaris nggak ada aktivitas/interaksi sama sekali (paling pasif di game) — kalau summon di Summoning Circle, cuma muncul translucent & nggak hunting. Stun Incense Burner kena lebih lama (~6 detik). TIDAK BISA ngelakuin Red Light Event (jadi lampu nggak akan pernah pecah lewat cara ini).'},
+  {name:'Krasue', trait:'Cuma 10% base chance nongol sebagai kepala melayang (tiap lilin nyala di radius 90 studs nambah +10%). Kalau muncul jadi kepala, itu 100% pasti Krasue. Melambat kalau deket api/lilin nyala. Langkah kaki nyaris tanpa suara, ada efek angin+wailing.'},
+  {name:'Poltergeist', trait:'Bisa interaksi banyak barang sekaligus ("explosion" lempar sampe puluhan barang bareng) — sanity tim ngedrop cepet banget cuma dari ini walau threshold-nya normal (50%).'},
+  {name:'Strigoi', trait:'Satu-satunya ghost yang fingerprint-nya kadang cuma nampilin 4 jari (bukan 5) di UV Light — glitch unik jadi ciri khasnya. Stun Incense Burner kena lebih lama juga.'},
+  {name:'Oni', trait:'Kebalikan dari Shade — makin banyak orang deket dia, makin aktif/agresif. Radius Crucifix lebih pendek (-5 studs). Langkah di salt awalnya cepat, melambat kalau kena Crucifix/stun.'},
+  {name:'Vuult', trait:'"Vuultage" naik dari elektronik nyala di radius 35 studs (+2 charge/alat). Kalau charge tinggi: sering matiin & mecahin lampu, ngoprek breaker terus, bisa ngancurin EMF Reader total kalau dilempar pas hunting.'},
+  {name:'Lament', trait:'TIDAK PERNAH speed up di line of sight — paling gampang dikabur kalau lari lurus. Kadang fake-ends hunt (matiin semua disruption & jadi pelan-pelan diam-diam, tapi masih ada langkah kaki halus kalau didekati). Lampu belakang van BERHENTI kedip pas dia hunting (ghost lain tetep kedip) — bisa dipakai buat confirm dari jauh.'},
+  {name:'Yurei', trait:'BUTA TOTAL pas hunting — cuma detect lewat pergerakan/electronic yang nyala. Kalau kamu diem total + matiin semua electronic yang dipegang, dia bisa jalan ngelewatin tanpa nyadar kamu ada di situ.'},
+  {name:'Revenant', trait:'Di luar hunting jalannya SUPER lambat, begitu hunting mulai & LOS ke player, speed-nya melonjak jadi salah satu yang tercepat di game.'},
+  {name:'Banshee', trait:'Fokus 1 target doang sepanjang match (ignore player lain kecuali targetnya udah mati/nggak ada di lokasi). Screech-nya bisa dikonfirm lewat Parabolic Microphone dari jarak lumayan jauh.'},
+  {name:'Jiangshi', trait:'Suka ngulang interaksi/event yang sama 3x berturut-turut (ketuk pintu, nangis, bisik, dll) — kalau liat pola berulang identik 3x, ini clue kuat. Kadang skip 1 langkah kaki pas hunting atau pas ninjek salt (selalu di langkah ke-2). Kadang skip huruf pas jawab di Spirit Board.'},
+  {name:'Oni', trait:'Kebalikan Shade — awal match paling BERBAHAYA & CEPAT, tapi makin lama makin lemah/lambat tiap kena Crucifix, kena stun, atau ninjek salt. Langkah di salt ikut melambat seiring dia melemah. TIDAK BISA ngelakuin Sing event.'},
+  {name:'Phantom', trait:'Difoto pas manifest (fake hunt/Sing/Flash/Red Light Event) bikin dia STUN & MENGHILANG total sesaat (cooldown 2 menit). TIDAK KELIATAN di live feed kamera (Video/Trail/CCTV) — kalau semua orang liat manifestasi langsung tapi kamera nggak nangkep apa-apa, itu ciri khas Phantom.'},
+];
+
+const CURSED_OBJECTS = [
+  {name:'Spirit Board (dulu Ouija Board)', body:`
+    <ul>
+      <li>Chance spawn 1/4 (gantiin slot Music Box/Summoning Circle/Tarot Cards — cuma 1 yang muncul tiap investigasi).</li>
+      <li>Interact (E di PC), ketik pertanyaan lewat chat. Buat NUTUP tanpa trigger cursed hunt: harus bilang salah satu closing phrase yang valid (contoh selesai wawancara) sebelum jalan menjauh.</li>
+      <li><b>Cuma bisa trigger 1 cursed hunt per match</b> — abis dipake buat itu, langsung nonaktif sisa match.</li>
+      <li>Cara trigger cursed hunt: jalan menjauh TANPA pamit/nutup dengan benar → board kebakar + raungan keras + hunt langsung mulai.</li>
+      <li>Ghost akan spawn hunt di FAVORITE ROOM-nya saat itu, bukan di lokasi board.</li>
+      <li><b>ZoZo</b> py 50% chance override jawaban jadi spam "ZOZO" tiap ditanya.</li>
+      <li>Paling sering dipake buat nyari lokasi ghost room & ngobrol soal ghost-nya, bukan buat sengaja trigger hunt.</li>
+    </ul>`},
+  {name:'Music Box', body:`
+    <ul>
+      <li>Chance spawn 1/4, dipake buat mulai cursed hunt DAN buat "lure" ghost pas lagi hunting (ghost otomatis dapet LOS ke kotak musiknya selama lagu masih muter).</li>
+      <li><b>Cuma 1x trigger cursed hunt per match</b>, sama kayak Spirit Board.</li>
+      <li>Kalau dijatuhin pas lagu masih muter waktu hunting, ghost bakal jalan ke kotak & ngancurinnya — bisa dipake buat nge-distract ghost biar temen sempet kabur/hide (tapi kalau ghost nemu player duluan, dia bisa prioritasin player).</li>
+      <li>Berguna banget buat nyari ghost room di map gede — jalan sambil lagu nyala, dengerin arah "nyanyian" respons ghost.</li>
+    </ul>`},
+  {name:'Summoning Circle', body:`
+    <ul>
+      <li>Chance spawn 1/4. Nyalain 5 lilin di pinggir lingkaran pake Lighter → abis semua nyala, ghost manifest di tengah & mulai hunt 5 detik kemudian.</li>
+      <li>Tiap nyalain lilin/deket lingkaran, sanity turun 16-17% per lilin — total bisa abis banyak.</li>
+      <li><b>Bisa dinyalain berkali-kali</b> (secara teori infinite cursed hunt), cooldown 3 menit (2 menit khusus Demon).</li>
+      <li>Nggak bisa dinyalain pas ghost lagi aktif hunting.</li>
+      <li><b>Shade</b> kalau disummon di sini cuma muncul translucent & nggak hunting (khas Shade yang emang nggak bisa hunt lewat cursed object jenis ini).</li>
+    </ul>`},
+  {name:'Tarot Cards', body:`
+    <ul>
+      <li>Chance spawn 1/4. Total <b>10x draw</b> per deck, tiap draw kartu kebakar abis dipake, efeknya random (positif/negatif/netral).</li>
+      <li><b>Bisa trigger sampe 10 cursed hunt</b> kalau apes semua kartu keluar "Death" (probability-nya sangat kecil).</li>
+      <li>Ditarik di LUAR site atau pas lagi HUNTING → otomatis selalu keluar <b>The Fool</b> (dipake buat "aman" nyelesain objective tanpa risiko).</li>
+      <li>Kartu berbahaya: <b>The Trap</b> (instant kill penarik), <b>Death</b> (kemungkinan besar trigger hunt) — siapin Crucifix/Incense Burner sebelum narik kartu apapun.</li>
+    </ul>`},
+];
+
+const KITS = [
+  {name:'The Doctor', price:'$850', body:'Sanity regen +5% tiap menit. Bagus buat lawan ghost agresif (Demon/ZoZo), tapi hati-hati bisa bikin sanity nggak pernah turun cukup buat objective tertentu.'},
+  {name:'Brave', price:'$1000', body:'Sanity drain lebih kecil dari biasanya — bagus dipasangin sama Doctor buat nahan sanity tetep tinggi lama-lama.'},
+  {name:'Ouija Master', price:'$1000', body:'Sanity drain dari nanya di Spirit Board jadi lebih kecil — enak buat banyak nanya tanpa takut sanity jebol duluan.'},
+  {name:'The All Seeing', price:'$1500', body:'Radius cahaya kecil nempel terus di badan kamu (built-in light). Nggak berfungsi kalau lagi challenge "No Lights".'},
+  {name:'Priest', price:'$2500', body:'Kit buat nahan efek sanity drain dari ghost event/interaksi — paling kepake lawan ghost yang ngedrenin sanity ekstra cepat (kayak dulu Phantom).'},
+  {name:'The Sentry', price:'$2500', body:'Advanced Trail Camera Detection — begitu ghost trigger Trail Camera kamu, lokasi ghost langsung ke-reveal dalam radius ~10 meter dari titik kamera itu, tanpa perlu buka live feed manual.'},
+  {name:'Ghost Whisperer', price:'$3000', body:'Built-in Spirit Box — bisa nanya lewat chat tanpa pegang Spirit Box fisik. Cuma berfungsi kalau ghost-nya emang punya evidence Spirit Box, dan harus di ROOM ghost saat itu juga (beda dari Spirit Box asli yang cuma jalan di favorite room).'},
+  {name:'Lain-lain (limited/seasonal)', price:'—', body:'The Cat, The Wimp, Santa, Festive Fella, The Summoner, The Engineer — kit musiman/event yang nggak selalu available buat dibeli. Efeknya bervariasi (revive, stamina boost, bawa cursed object sendiri, dll), cek in-game pas event aktif buat detail lengkapnya.'},
+];
+
+// build evidence buttons
+const evGrid = document.getElementById('evidenceGrid');
+const state = {}; // 0 neutral, 1 confirmed, -1 eliminated
+EVIDENCE.forEach(e=>{
+  state[e.id]=0;
+  const btn=document.createElement('div');
+  btn.className='ev-btn';
+  btn.dataset.id=e.id;
+  btn.dataset.state='';
+  btn.innerHTML=`<span class="tag">${e.tag}</span><span>${e.label}</span>`;
+  btn.addEventListener('click',()=>{
+    state[e.id]=(state[e.id]+2)%3-1; // cycles 0->1->-1->0
+    render();
+  });
+  evGrid.appendChild(btn);
+});
+
+document.getElementById('resetBtn').addEventListener('click',()=>{
+  EVIDENCE.forEach(e=>state[e.id]=0);
+  render();
+});
+
+const ghostListEl = document.getElementById('ghostList');
+const counterEl = document.getElementById('counter');
+const confCountEl = document.getElementById('confCount');
+const elimCountEl = document.getElementById('elimCount');
+
+function render(){
+  // update evidence buttons visuals
+  document.querySelectorAll('.ev-btn').forEach(btn=>{
+    const id=btn.dataset.id;
+    btn.classList.remove('confirmed','eliminated');
+    if(state[id]===1){ btn.classList.add('confirmed'); btn.dataset.state='ON'; }
+    else if(state[id]===-1){ btn.classList.add('eliminated'); btn.dataset.state='OFF'; }
+    else { btn.dataset.state=''; }
+  });
+
+  const confirmed = EVIDENCE.filter(e=>state[e.id]===1).map(e=>e.id);
+  const eliminated = EVIDENCE.filter(e=>state[e.id]===-1).map(e=>e.id);
+  confCountEl.textContent = confirmed.length;
+  elimCountEl.textContent = eliminated.length;
+
+  let remaining = 0;
+  ghostListEl.innerHTML='';
+  GHOSTS.forEach(g=>{
+    const hasAllConfirmed = confirmed.every(id=>g.ev.includes(id));
+    const hasNoneEliminated = eliminated.every(id=>!g.ev.includes(id));
+    const alive = hasAllConfirmed && hasNoneEliminated;
+    if(alive) remaining++;
+    const card=document.createElement('div');
+    card.className='ghost-card'+(alive?'':' out');
+    const evLabel = g.ev.map(id=>EVIDENCE.find(e=>e.id===id).tag).join(' · ');
+    card.innerHTML=`<span class="name">${g.name}</span><span class="evs">${evLabel}</span>`;
+    ghostListEl.appendChild(card);
+  });
+
+  const prev = counterEl.textContent;
+  counterEl.innerHTML = `${remaining}<span class="counter-of">/${GHOSTS.length}</span>`;
+  if(prev !== counterEl.textContent){
+    counterEl.classList.remove('tick');
+    void counterEl.offsetWidth;
+    counterEl.classList.add('tick');
+  }
+}
+
+// tools accordion
+const toolsWrap = document.getElementById('toolsWrap');
+TOOLS.forEach(t=>{
+  const d=document.createElement('details');
+  d.className='tool';
+  d.innerHTML=`<summary><span>${t.name}</span><span class="chev">▶</span></summary><div class="body">${t.body}</div>`;
+  toolsWrap.appendChild(d);
+});
+
+// cursed objects accordion
+const cursedWrap = document.getElementById('cursedWrap');
+CURSED_OBJECTS.forEach(c=>{
+  const d=document.createElement('details');
+  d.className='tool';
+  d.innerHTML=`<summary><span>${c.name}</span><span class="chev">▶</span></summary><div class="body">${c.body}</div>`;
+  cursedWrap.appendChild(d);
+});
+
+// kits accordion
+const kitsWrap = document.getElementById('kitsWrap');
+KITS.forEach(k=>{
+  const d=document.createElement('details');
+  d.className='tool kit-card';
+  d.innerHTML=`<summary><span>${k.name}</span><span style="display:flex;align-items:center;"><span class="kit-price">${k.price}</span><span class="chev">▶</span></span></summary><div class="body"><p style="margin:0;">${k.body}</p></div>`;
+  kitsWrap.appendChild(d);
+});
+
+// ghost traits list
+const traitsWrap = document.getElementById('traitsWrap');
+GHOST_TRAITS.forEach(g=>{
+  const c=document.createElement('div');
+  c.className='trait-card';
+  c.innerHTML=`<b class="gname">${g.name}</b>${g.trait}`;
+  traitsWrap.appendChild(c);
+});
+
+// fake live clock for flavor
+function tick(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = h+':'+m;
+}
+tick();
+setInterval(tick,10000);
+
+render();
+</script>
+</body>
+</html>
